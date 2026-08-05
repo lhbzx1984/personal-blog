@@ -1092,6 +1092,13 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
+        a.blog-card {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
         .blog-image {
             height: 200px;
             background: linear-gradient(135deg, var(--bg-tertiary), var(--accent-cyan));
@@ -1105,6 +1112,9 @@
         .blog-card:nth-child(1) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #00f5ff); }
         .blog-card:nth-child(2) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #8b5cf6); }
         .blog-card:nth-child(3) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #ec4899); }
+        .blog-card:nth-child(4) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #f59e0b); }
+        .blog-card:nth-child(5) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #14b8a6); }
+        .blog-card:nth-child(6) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #6366f1); }
 
         .blog-date {
             position: absolute;
@@ -1855,6 +1865,7 @@
                 <li><a href="#skills">技能</a></li>
                 <li><a href="#projects">项目</a></li>
                 <li><a href="#blog">博客</a></li>
+                <li><a href="#wechat">公众号</a></li>
                 <li><a href="#timeline">历程</a></li>
                 <li><a href="#contact">联系</a></li>
             </ul>
@@ -3027,6 +3038,100 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section class="section" id="wechat">
+            <div class="section-header">
+                <span class="section-tag">// 微信公众号</span>
+                <h2 class="section-title">公众号科技文章</h2>
+                <p class="section-subtitle">公众号「AI科技改变生活」· 分享AI技术与实践</p>
+            </div>
+            <div class="blog-grid">
+                <a class="blog-card" href="https://mp.weixin.qq.com/s/JtTFQqK-MUc6TPAq4EWAYQ" target="_blank" rel="noopener">
+                    <div class="blog-image">
+                        <span>🖼️</span>
+                        <span class="blog-date">斌哥带你学AI</span>
+                    </div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">图像识别</h3>
+                        <p class="blog-excerpt">介绍图像识别的基本原理与经典应用，带你入门计算机视觉，理解如何让机器"看懂"图像。</p>
+                        <div class="blog-meta">
+                            <span>📢 公众号文章</span>
+                            <span>🔗 点击阅读</span>
+                        </div>
+                    </div>
+                </a>
+                <a class="blog-card" href="https://mp.weixin.qq.com/s/LeXcLrIpaf-wwi6z0rQ5Aw" target="_blank" rel="noopener">
+                    <div class="blog-image">
+                        <span>🎯</span>
+                        <span class="blog-date">斌哥带你学AI</span>
+                    </div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">目标检测</h3>
+                        <p class="blog-excerpt">讲解目标检测算法原理，YOLO、SSD 等主流模型的实践应用，实现图像中多目标的定位与识别。</p>
+                        <div class="blog-meta">
+                            <span>📢 公众号文章</span>
+                            <span>🔗 点击阅读</span>
+                        </div>
+                    </div>
+                </a>
+                <a class="blog-card" href="https://mp.weixin.qq.com/s/5h08mjmS_mM-0yz0j6dcKg" target="_blank" rel="noopener">
+                    <div class="blog-image">
+                        <span>📝</span>
+                        <span class="blog-date">斌哥带你学AI</span>
+                    </div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">文本分类</h3>
+                        <p class="blog-excerpt">从词向量到深度学习，文本分类任务全流程解析，掌握自然语言处理的核心基础技能。</p>
+                        <div class="blog-meta">
+                            <span>📢 公众号文章</span>
+                            <span>🔗 点击阅读</span>
+                        </div>
+                    </div>
+                </a>
+                <a class="blog-card" href="https://mp.weixin.qq.com/s/5_LN0rRDHqhVkNOPkr_6Vg" target="_blank" rel="noopener">
+                    <div class="blog-image">
+                        <span>🎵</span>
+                        <span class="blog-date">斌哥带你学AI</span>
+                    </div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">声音分类</h3>
+                        <p class="blog-excerpt">音频特征提取与声音分类模型的构建方法，探索语音信号处理与音频智能识别技术。</p>
+                        <div class="blog-meta">
+                            <span>📢 公众号文章</span>
+                            <span>🔗 点击阅读</span>
+                        </div>
+                    </div>
+                </a>
+                <a class="blog-card" href="https://mp.weixin.qq.com/s/SiIYF76ZACFLuuOsOtLDfw" target="_blank" rel="noopener">
+                    <div class="blog-image">
+                        <span>🎬</span>
+                        <span class="blog-date">斌哥带你学AI</span>
+                    </div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">视频分类</h3>
+                        <p class="blog-excerpt">时序特征建模与视频内容理解，视频分类实战，让机器学会分析动态影像中的动作与场景。</p>
+                        <div class="blog-meta">
+                            <span>📢 公众号文章</span>
+                            <span>🔗 点击阅读</span>
+                        </div>
+                    </div>
+                </a>
+                <a class="blog-card" href="https://mp.weixin.qq.com/s/vf09V14pSJ1NhV_TbGzyag" target="_blank" rel="noopener">
+                    <div class="blog-image">
+                        <span>🚀</span>
+                        <span class="blog-date">活动回顾</span>
+                    </div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">AI助力智能交互设计</h3>
+                        <p class="blog-excerpt">"所想即所得"——百度秒哒校园行燃动创意编程新风潮，体验AI赋能智能交互设计的创新实践。</p>
+                        <div class="blog-meta">
+                            <span>📢 公众号文章</span>
+                            <span>🔗 点击阅读</span>
+                        </div>
+                    </div>
+                </a>
             </div>
         </section>
 
