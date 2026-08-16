@@ -1105,30 +1105,59 @@
 
         .blog-image {
             height: 200px;
-            background: linear-gradient(135deg, var(--bg-tertiary), var(--accent-cyan));
+            background: var(--bg-tertiary) center/cover no-repeat;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 60px;
+            overflow: hidden;
         }
 
-        .blog-card:nth-child(1) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #00f5ff); }
-        .blog-card:nth-child(2) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #8b5cf6); }
-        .blog-card:nth-child(3) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #ec4899); }
-        .blog-card:nth-child(4) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #f59e0b); }
-        .blog-card:nth-child(5) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #14b8a6); }
-        .blog-card:nth-child(6) .blog-image { background: linear-gradient(135deg, var(--bg-tertiary), #6366f1); }
+        .blog-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(5,5,12,0.55) 80%, rgba(5,5,12,0.85) 100%);
+            z-index: 1;
+            pointer-events: none;
+            transition: background 0.35s ease;
+        }
+
+        .blog-card:hover .blog-image::after {
+            background: linear-gradient(180deg, rgba(0,245,255,0.08) 0%, rgba(139,92,246,0.12) 55%, rgba(5,5,12,0.85) 100%);
+        }
+
+        .blog-image > *:not(.blog-date) {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 技术博客:前3张  —  博客背景图/ 目录 */
+        section:not(#wechat) .blog-card:nth-child(1) .blog-image { background-image: url("博客背景图/blog1_AI通识课教学心得.png"); }
+        section:not(#wechat) .blog-card:nth-child(2) .blog-image { background-image: url("博客背景图/blog2_单片机教材编写.png"); }
+        section:not(#wechat) .blog-card:nth-child(3) .blog-image { background-image: url("博客背景图/blog3_指导学生竞赛.png"); }
+
+        /* 公众号科技文章:后6张  —  公众号背景图/ 目录 */
+        #wechat .blog-card:nth-child(1) .blog-image { background-image: url("公众号背景图/we1_图像识别.png"); }
+        #wechat .blog-card:nth-child(2) .blog-image { background-image: url("公众号背景图/we2_目标检测.png"); }
+        #wechat .blog-card:nth-child(3) .blog-image { background-image: url("公众号背景图/we3_文本分类.png"); }
+        #wechat .blog-card:nth-child(4) .blog-image { background-image: url("公众号背景图/we4_声音分类.png"); }
+        #wechat .blog-card:nth-child(5) .blog-image { background-image: url("公众号背景图/we5_视频分类.png"); }
+        #wechat .blog-card:nth-child(6) .blog-image { background-image: url("公众号背景图/we6_秒哒校园行.png"); }
 
         .blog-date {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(4px);
             padding: 8px 15px;
             border-radius: 8px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
+            z-index: 5;
+            color: #fff;
         }
 
         .blog-content {
