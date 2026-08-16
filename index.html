@@ -635,24 +635,23 @@
         .skill-icon {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            background: var(--bg-tertiary) center/cover no-repeat;
             border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
             margin-bottom: 25px;
             position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
         }
 
-        .skill-card:nth-child(1) .skill-icon { background: linear-gradient(135deg, #00f5ff, #3b82f6); }
-        .skill-card:nth-child(2) .skill-icon { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
-        .skill-card:nth-child(3) .skill-icon { background: linear-gradient(135deg, #10b981, #06b6d4); }
-        .skill-card:nth-child(4) .skill-icon { background: linear-gradient(135deg, #f59e0b, #ef4444); }
-        .skill-card:nth-child(5) .skill-icon { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-        .skill-card:nth-child(6) .skill-icon { background: linear-gradient(135deg, #ec4899, #f43f5e); }
-        .skill-card:nth-child(7) .skill-icon { background: linear-gradient(135deg, #14b8a6, #22d3ee); }
-        .skill-card:nth-child(8) .skill-icon { background: linear-gradient(135deg, #f97316, #fbbf24); }
+        /* 为每张技能图添加细微彩色边框呼应原渐变 */
+        .skill-card:nth-child(1) .skill-icon { background-image: url("技能图标/skill1_python.png"); border: 2px solid rgba(0,245,255,0.45); }
+        .skill-card:nth-child(2) .skill-icon { background-image: url("技能图标/skill2_machine_learning.png"); border: 2px solid rgba(139,92,246,0.45); }
+        .skill-card:nth-child(3) .skill-icon { background-image: url("技能图标/skill3_web_development.png"); border: 2px solid rgba(6,182,212,0.45); }
+        .skill-card:nth-child(4) .skill-icon { background-image: url("技能图标/skill4_database.png"); border: 2px solid rgba(245,158,11,0.45); }
+        .skill-card:nth-child(5) .skill-icon { background-image: url("技能图标/skill5_containerization.png"); border: 2px solid rgba(99,102,241,0.45); }
+        .skill-card:nth-child(6) .skill-icon { background-image: url("技能图标/skill6_data_analysis.png"); border: 2px solid rgba(236,72,153,0.45); }
+        .skill-card:nth-child(7) .skill-icon { background-image: url("技能图标/skill7_toolchain.png"); border: 2px solid rgba(20,184,166,0.45); }
+        .skill-card:nth-child(8) .skill-icon { background-image: url("技能图标/skill8_cloud_services.png"); border: 2px solid rgba(249,115,22,0.45); }
 
         .skill-name {
             font-family: 'Orbitron', sans-serif;
@@ -1970,7 +1969,7 @@
             </div>
             <div class="skills-grid">
                 <div class="skill-card">
-                    <div class="skill-icon">🐍</div>
+                    <div class="skill-icon"></div>
                     <h3 class="skill-name">Python</h3>
                     <p class="skill-desc">Python全栈开发，熟悉数据分析与机器学习算法实现</p>
                     <div class="skill-bar">
@@ -1979,7 +1978,7 @@
                     <div class="skill-percent">92%</div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">🧠</div>
+                    <div class="skill-icon"></div>
                     <h3 class="skill-name">机器学习</h3>
                     <p class="skill-desc">Scikit-learn, TensorFlow, 深度学习模型构建与训练</p>
                     <div class="skill-bar">
@@ -1988,7 +1987,7 @@
                     <div class="skill-percent">88%</div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">🌐</div>
+                    <div class="skill-icon"></div>
                     <h3 class="skill-name">Web开发</h3>
                     <p class="skill-desc">Flask, Django, HTML/CSS/JavaScript，前后端分离架构</p>
                     <div class="skill-bar">
@@ -1997,7 +1996,7 @@
                     <div class="skill-percent">85%</div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">🗄️</div>
+                    <div class="skill-icon"></div>
                     <h3 class="skill-name">数据库</h3>
                     <p class="skill-desc">MySQL, MongoDB, Redis，数据建模与查询优化</p>
                     <div class="skill-bar">
@@ -2006,7 +2005,7 @@
                     <div class="skill-percent">80%</div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">🐳</div>
+                    <div class="skill-icon"></div>
                     <h3 class="skill-name">容器化</h3>
                     <p class="skill-desc">Docker容器化部署，Kubernetes集群管理</p>
                     <div class="skill-bar">
@@ -2015,7 +2014,7 @@
                     <div class="skill-percent">75%</div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">📊</div>
+                    <div class="skill-icon"></div>
                     <h3 class="skill-name">数据分析</h3>
                     <p class="skill-desc">Pandas, NumPy, Matplotlib，数据可视化与处理</p>
                     <div class="skill-bar">
@@ -2024,7 +2023,7 @@
                     <div class="skill-percent">82%</div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">🔧</div>
+                    <div class="skill-icon"></div>
                     <h3 class="skill-name">工具链</h3>
                     <p class="skill-desc">Git, Linux, Vim，开发效率工具熟练运用</p>
                     <div class="skill-bar">
@@ -2033,7 +2032,7 @@
                     <div class="skill-percent">88%</div>
                 </div>
                 <div class="skill-card">
-                    <div class="skill-icon">☁️</div>
+                    <div class="skill-icon"></div>
                     <h3 class="skill-name">云服务</h3>
                     <p class="skill-desc">阿里云ECS, OSS, CDN，云原生应用部署</p>
                     <div class="skill-bar">
