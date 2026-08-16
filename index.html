@@ -726,7 +726,7 @@
 
         .project-image {
             height: 250px;
-            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            background: var(--bg-tertiary) center/cover no-repeat;
             position: relative;
             overflow: hidden;
             display: flex;
@@ -735,28 +735,37 @@
         }
 
         .project-image-icon {
-            font-size: 80px;
-            opacity: 0.5;
+            font-size: 88px;
+            opacity: 0.22;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+            position: relative;
+            z-index: 2;
+            transition: transform 0.4s ease, opacity 0.3s ease;
         }
 
-        .project-card:nth-child(1) .project-image { background: linear-gradient(135deg, #1a1a2e, #16213e); }
-        .project-card:nth-child(2) .project-image { background: linear-gradient(135deg, #1a1a2e, #0f3460); }
-        .project-card:nth-child(3) .project-image { background: linear-gradient(135deg, #1a1a2e, #1a1a40); }
+        .project-card:hover .project-image-icon {
+            transform: scale(1.15) rotate(4deg);
+            opacity: 0.38;
+        }
 
-        .project-image::before {
+        .project-card:nth-child(1) .project-image { background-image: url("项目背景图/1_中医舌象智能诊断.png"); }
+        .project-card:nth-child(2) .project-image { background-image: url("项目背景图/2_AI简易智能体.png"); }
+        .project-card:nth-child(3) .project-image { background-image: url("项目背景图/3_PaperToPipeline.png"); }
+        .project-card:nth-child(4) .project-image { background-image: url("项目背景图/4_DL_CNN深度学习.png"); }
+        .project-card:nth-child(5) .project-image { background-image: url("项目背景图/5_机器学习训练平台可视化.png"); }
+        .project-card:nth-child(6) .project-image { background-image: url("项目背景图/6_大模型智能对话.png"); }
+
+        .project-image::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 170, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(10, 10, 15, 0.35) 0%, rgba(10, 10, 15, 0.55) 100%);
+            z-index: 1;
+            transition: background 0.3s ease;
         }
 
-        .project-card:hover .project-image::before {
-            opacity: 1;
+        .project-card:hover .project-image::after {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.22) 0%, rgba(139, 92, 246, 0.28) 100%);
         }
 
         .project-overlay {
