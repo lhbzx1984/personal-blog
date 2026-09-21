@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刘海斌 | AI音乐合集</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
+    <style>
+        /* AI音乐页面专用样式 */
+        .ai-music-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 40px auto 0;
+        }
+
+        .ai-playlist {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .ai-playlist::-webkit-scrollbar {
+            width: 6px;
+        }
+        .ai-playlist::-webkit-scrollbar-thumb {
+            background: rgba(0, 245, 255, 0.3);
+            border-radius: 3px;
+        }
+        .ai-playlist::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .playlist-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+            letter-spacing: 1px;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 4px;
+        }
+
+        .playlist-item:hover {
+            background: rgba(0, 245, 255, 0.08);
+        }
+
+        .playlist-item.active {
+            background: linear-gradient(90deg, rgba(0, 245, 255, 0.15), rgba(255, 0, 170, 0.1));
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .playlist-index {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+            width: 24px;
+            text-align: center;
+        }
+
+        .playlist-item.active .playlist-index {
+            color: var(--accent-cyan);
+        }
+
+        .playlist-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .playlist-name {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .playlist-item.active .playlist-name {
+            color: var(--accent-cyan);
+        }
+
+        .playlist-artist {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .playlist-duration {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .ai-player-wrapper {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0, 245, 255, 0.05);
+        }
+
+        .ai-player-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+        }
+
+        .ai-lyrics-full {
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 20px;
+            line-height: 2;
+            font-size: 15px;
+            color: var(--text-secondary);
+            text-align: center;
+            white-space: pre-wrap;
+        }
+
+        .ai-lyrics-full::-webkit-scrollbar {
+            width: 6px;
+        }
+        .ai-lyrics-full::-webkit-scrollbar-thumb {
+            background: rgba(0, 245, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        @media (max-width: 860px) {
+            .ai-music-layout {
+                grid-template-columns: 1fr;
+            }
+            .ai-playlist {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+    <div class="grid-overlay"></div>
+
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <div class="main-container">
+        <nav>
+            <div class="logo">LIUHAIBIN</div>
+            <ul class="nav-links">
+                <li><a href="skills.html">技能</a></li>
+                <li><a href="projects.html">项目</a></li>
+                <li><a href="blog.html">博客</a></li>
+                <li><a href="wechat.html">公众号</a></li>
+                <li><a href="ai_music.html">AI音乐</a></li>
+                <li><a href="index.html#timeline">历程</a></li>
+                <li><a href="index.html#contact">联系</a></li>
+            </ul>
+        </nav>
+
+        <section class="section music-section" id="ai-music">
+            <div class="section-header">
+                <span class="section-tag">// AI音乐合集</span>
+                <h2 class="section-title">AI 生成音乐</h2>
+                <p class="section-subtitle">由人工智能创作的音乐作品 · 点击歌曲名即可播放</p>
+            </div>
+
+            <div class="ai-music-layout">
+                <!-- 歌曲列表 -->
+                <div class="ai-playlist" id="playlist">
+                    <div class="playlist-title">🎵 播放列表 (7)</div>
+                    <!-- 歌曲项由 JS 动态生成 -->
+                </div>
+
+                <!-- 播放器 -->
+                <div class="ai-player-wrapper">
+                    <div class="music-player-top">
+                        <div class="music-disc" id="musicDisc">
+                            <span class="music-disc-icon">🎵</span>
+                        </div>
+                        <div class="music-info">
+                            <div class="music-title" id="musicTitle">选择一首歌曲</div>
+                            <div class="music-artist" id="musicArtist">AI 生成音乐</div>
+                            <div class="music-progress-wrap">
+                                <span class="music-time" id="musicCurrent">00:00</span>
+                                <div class="music-progress" id="musicProgress">
+                                    <div class="music-progress-fill" id="musicFill"></div>
+                                </div>
+                                <span class="music-time" id="musicDuration">00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="music-controls">
+                        <button class="music-btn" id="prevBtn" title="上一首">⏮</button>
+                        <button class="music-btn play-btn" id="playBtn" title="播放/暂停">▶</button>
+                        <button class="music-btn" id="nextBtn" title="下一首">⏭</button>
+                        <button class="music-btn" id="modeBtn" title="切换播放模式">🔁</button>
+                    </div>
+                    <div class="music-mode-label" id="modeLabel">列表循环</div>
+
+                    <!-- 歌词显示区域 -->
+                    <div class="lyrics-container">
+                        <div class="lyrics-list" id="lyricsList">
+                            <div class="lyric-empty">点击左侧歌曲开始播放<br>歌词将在此处显示</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <audio id="bgMusic" preload="auto"></audio>
+        </section>
+
+        <footer>
+            <p class="footer-text">
+                © 2026 <a href="#">刘海斌</a> · 人工智能教育 · 智能硬件 · All Rights Reserved
+            </p>
+        </footer>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="ai_music.js"></script>
+</body>
+</html>
