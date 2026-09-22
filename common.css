@@ -750,6 +750,7 @@
         .project-card:nth-child(19) .project-image { background-image: url("项目背景图/19_NVIDIA_GPU加速计算.png"); }
         .project-card:nth-child(20) .project-image { background-image: url("https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=A%20futuristic%20AI%20video%20generation%20concept%2C%20glowing%20film%20frames%20morphing%20from%20neural%20network%20code%2C%20cinematic%20purple%20and%20blue%20gradient%2C%20holographic%20video%20frames%20floating%20in%20dark%20space%2C%20high-tech%20digital%20art&image_size=landscape_16_9"); }
         .project-card:nth-child(21) .project-image { background-image: url("https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Modern%20NVIDIA%20data%20center%20interior%2C%20rows%20of%20GPU%20servers%20with%20green%20and%20blue%20LED%20indicators%2C%20clean%20industrial%20tech%20aesthetic%2C%20dark%20atmospheric%20lighting%2C%20server%20racks%20vanishing%20into%20perspective&image_size=landscape_16_9"); }
+        .project-card:nth-child(22) .project-image { background-image: url("https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20engineer%20deploying%20models%20on%20site%2C%20laptop%20with%20code%20on%20screen%20connected%20to%20enterprise%20servers%2C%20field%20deployment%20concept%2C%20dark%20tech%20workspace%20with%20blue%20glowing%20data%20streams%2C%20professional%20and%20cinematic&image_size=landscape_16_9"); }
 
         .project-image::after {
             content: '';
