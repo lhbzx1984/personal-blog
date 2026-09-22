@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刘海斌 | 优秀校友及项目</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
+    <style>
+        /* 优秀校友页面专用样式 */
+        .alumni-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("https://aka.doubaocdn.com/s/p2NHNrwf3Y") center/cover no-repeat;
+            z-index: 0;
+            filter: brightness(0.35);
+        }
+
+        .alumni-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(10,10,15,0.6) 0%, rgba(10,10,15,0.85) 100%);
+        }
+
+        .alumni-section {
+            min-height: 100vh;
+            padding: 120px 60px 80px;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 3D 环形旋转容器 */
+        .ring-stage {
+            width: 100%;
+            height: 520px;
+            margin-top: 40px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1400px;
+        }
+
+        .ring-container {
+            position: relative;
+            width: 280px;
+            height: 380px;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .ring-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 380px;
+            border-radius: 16px;
+            overflow: hidden;
+            backface-visibility: hidden;
+            border: 2px solid rgba(0, 245, 255, 0.25);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+            cursor: pointer;
+        }
+
+        .ring-card.active-card {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 40px rgba(0, 245, 255, 0.4), 0 15px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .ring-card-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .ring-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(10,10,15,0.3) 0%, rgba(10,10,15,0.7) 60%, rgba(10,10,15,0.92) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 30px 25px;
+            transition: background 0.4s ease;
+        }
+
+        .ring-card.active-card .ring-card-overlay {
+            background: linear-gradient(180deg, rgba(0,245,255,0.05) 0%, rgba(10,10,15,0.65) 50%, rgba(10,10,15,0.9) 100%);
+        }
+
+        .ring-card-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .ring-card-info {
+            font-size: 14px;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 12px;
+        }
+
+        .ring-card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .ring-card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: rgba(0, 245, 255, 0.15);
+            border: 1px solid rgba(0, 245, 255, 0.4);
+            border-radius: 6px;
+            color: var(--accent-cyan);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            width: fit-content;
+        }
+
+        .ring-card-link:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            box-shadow: var(--glow-cyan);
+        }
+
+        /* 空位卡片 */
+        .ring-card-empty .ring-card-bg {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+        }
+
+        .ring-card-empty .ring-card-overlay {
+            background: linear-gradient(180deg, rgba(10,10,15,0.5) 0%, rgba(10,10,15,0.8) 100%);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ring-card-empty .ring-card-placeholder {
+            text-align: center;
+        }
+
+        .ring-card-empty .ring-card-placeholder-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.4;
+        }
+
+        .ring-card-empty .ring-card-placeholder-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+        }
+
+        .ring-card-empty .ring-card-placeholder-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+
+        /* 导航箭头 */
+        .ring-nav {
+            display: flex;
+            gap: 30px;
+            margin-top: 40px;
+            align-items: center;
+        }
+
+        .ring-arrow {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 245, 255, 0.4);
+            background: var(--bg-secondary);
+            color: var(--accent-cyan);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .ring-arrow:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: var(--glow-cyan);
+            transform: scale(1.1);
+        }
+
+        .ring-position-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .ring-position-label .current {
+            color: var(--accent-cyan);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* 底部指示器 */
+        .ring-indicators {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .ring-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ring-dot.active {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.6);
+            transform: scale(1.4);
+        }
+
+        @media (max-width: 768px) {
+            .alumni-section {
+                padding: 100px 20px 60px;
+            }
+            .ring-stage {
+                height: 420px;
+            }
+            .ring-container,
+            .ring-card {
+                width: 220px;
+                height: 310px;
+            }
+            .ring-card-name {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="alumni-bg"></div>
+    <canvas id="particles-canvas"></canvas>
+    <div class="grid-overlay"></div>
+
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <div class="main-container">
+        <nav>
+            <div class="logo">LIUHAIBIN</div>
+            <ul class="nav-links">
+                <li><a href="index.html">主页</a></li>
+                <li><a href="skills.html">技能</a></li>
+                <li><a href="projects.html">项目</a></li>
+                <li><a href="blog.html">博客</a></li>
+                <li><a href="wechat.html">公众号</a></li>
+                <li><a href="ai_music.html">AI音乐</a></li>
+                <li><a href="alumni.html">优秀校友</a></li>
+                <li><a href="index.html#timeline">历程</a></li>
+                <li><a href="index.html#contact">联系</a></li>
+            </ul>
+        </nav>
+
+        <section class="alumni-section" id="alumni">
+            <div class="section-header">
+                <span class="section-tag">// 优秀校友及项目</span>
+                <h2 class="section-title">优秀校友风采</h2>
+                <p class="section-subtitle">展示优秀毕业生与他们的精彩项目 · 旋转浏览</p>
+            </div>
+
+            <!-- 3D 环形旋转舞台 -->
+            <div class="ring-stage">
+                <div class="ring-container" id="ringContainer">
+                    <!-- 卡片由 JS 动态生成 -->
+                </div>
+            </div>
+
+            <!-- 导航控制 -->
+            <div class="ring-nav">
+                <button class="ring-arrow" id="ringPrev" title="上一个">&#8592;</button>
+                <div class="ring-position-label">
+                    <span class="current" id="ringCurrent">1</span> / 10
+                </div>
+                <button class="ring-arrow" id="ringNext" title="下一个">&#8594;</button>
+            </div>
+
+            <!-- 位置指示器 -->
+            <div class="ring-indicators" id="ringIndicators"></div>
+        </section>
+
+        <footer>
+            <p class="footer-text">
+                © 2026 <a href="#">刘海斌</a> · 人工智能教育 · 智能硬件 · All Rights Reserved
+            </p>
+        </footer>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="alumni.js"></script>
+</body>
+</html>
