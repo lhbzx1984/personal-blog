@@ -5,13 +5,13 @@
 
     // 歌曲列表
     const songs = [
-        { name: '南墙火焰', artist: '碳基圈', mp3: 'AI音乐/南墙火焰.mp3', lrc: 'AI音乐/南墙火焰.txt' },
-        { name: '平凡的心', artist: '碳基圈', mp3: 'AI音乐/平凡的心-版本2.mp3', lrc: 'AI音乐/平凡的心-版本2.txt' },
-        { name: '归人未至', artist: '碳基圈', mp3: 'AI音乐/归人未至.mp3', lrc: 'AI音乐/归人未至.txt' },
-        { name: '心随飞翔', artist: '碳基圈', mp3: 'AI音乐/心随飞翔-版本2.mp3', lrc: 'AI音乐/心随飞翔-版本2(1).txt' },
-        { name: '校园初恋', artist: '碳基圈', mp3: 'AI音乐/校园初恋.mp3', lrc: 'AI音乐/校园初恋.txt' },
-        { name: '狮驼岭夜关', artist: '碳基圈', mp3: 'AI音乐/狮驼岭夜关-版本2.mp3', lrc: 'AI音乐/狮驼岭夜关-版本2.txt' },
-        { name: '青春永动', artist: '碳基圈', mp3: 'AI音乐/青春永动-版本2.mp3', lrc: 'AI音乐/青春永动-版本2.txt' }
+        { name: '南墙火焰', artist: '碳基圈', mp3: 'AI音乐/南墙火焰.mp3', lrc: 'AI音乐/南墙火焰.lrc' },
+        { name: '平凡的心', artist: '碳基圈', mp3: 'AI音乐/平凡的心-版本2.mp3', lrc: 'AI音乐/平凡的心.lrc' },
+        { name: '归人未至', artist: '碳基圈', mp3: 'AI音乐/归人未至.mp3', lrc: 'AI音乐/归人未至.lrc' },
+        { name: '心随飞翔', artist: '碳基圈', mp3: 'AI音乐/心随飞翔-版本2.mp3', lrc: 'AI音乐/心随飞翔-版本2.lrc' },
+        { name: '校园初恋', artist: '碳基圈', mp3: 'AI音乐/校园初恋.mp3', lrc: 'AI音乐/校园初恋.lrc' },
+        { name: '狮驼岭夜关', artist: '碳基圈', mp3: 'AI音乐/狮驼岭夜关-版本2.mp3', lrc: 'AI音乐/狮驼岭夜关-版本2.lrc' },
+        { name: '青春永动', artist: '碳基圈', mp3: 'AI音乐/青春永动-版本2.mp3', lrc: 'AI音乐/青春永动-版本2.lrc' }
     ];
 
     // DOM 元素
@@ -38,8 +38,9 @@
     ];
     let mode = 0;
     let currentIndex = -1;
-    let lyrics = []; // 带时间戳的歌词行
-    let lyricsText = ''; // 纯文本歌词
+    let lyrics = []; // 带时间戳的歌词行（{time, text}）
+    let lyricsLines = []; // 无时间戳时的纯文本行数组
+    let hasTimestamp = false; // 当前歌词是否有时间戳
     let currentLine = -1;
 
     function formatTime(s) {
@@ -83,29 +84,46 @@
         return meta;
     }
 
-    // 渲染歌词
-    function renderLyrics(hasTimestamp) {
-        if (hasTimestamp && lyrics.length) {
-            // 有时间戳：逐行渲染，支持高亮
+    // 渲染歌词（统一逐行渲染，支持高亮和滚动）
+    function renderLyrics() {
+        if (lyrics.length) {
+            // 有时间戳：逐行渲染
             lyricsList.innerHTML = lyrics.map(l =>
                 `<div class="lyric-line">${l.text || '...'}</div>`
             ).join('');
-            currentLine = -1;
-            lyricsList.style.transform = 'translateY(0)';
-        } else if (lyricsText) {
-            // 无时间戳：显示完整文本
-            lyricsList.innerHTML = `<div class="lyric-line" style="line-height:2.2; white-space:pre-wrap;">${lyricsText}</div>`;
-            lyricsList.style.transform = 'translateY(0)';
+        } else if (lyricsLines.length) {
+            // 无时间戳：逐行渲染（空行用占位符）
+            lyricsList.innerHTML = lyricsLines.map(line =>
+                `<div class="lyric-line">${line.trim() ? line : '&nbsp;'}</div>`
+            ).join('');
         } else {
             lyricsList.innerHTML = '<div class="lyric-empty">暂无歌词</div>';
-            lyricsList.style.transform = 'translateY(0)';
         }
+        currentLine = -1;
+        lyricsList.style.transform = 'translateY(0)';
+    }
+
+    // 根据歌曲总时长为无时间戳歌词均匀分配每行时间
+    function assignTimestamps() {
+        if (hasTimestamp || !lyricsLines.length || !audio.duration || isNaN(audio.duration)) return;
+        const total = audio.duration;
+        const count = lyricsLines.length;
+        // 预留前5秒为前奏，后5秒为尾奏
+        const startOffset = Math.min(5, total * 0.1);
+        const endOffset = Math.min(5, total * 0.1);
+        const available = Math.max(total - startOffset - endOffset, 1);
+        const perLine = available / count;
+        lyrics = lyricsLines.map((line, i) => ({
+            time: startOffset + i * perLine,
+            text: line
+        }));
     }
 
     // 加载歌词
     function loadLyrics(song) {
         lyrics = [];
-        lyricsText = '';
+        lyricsLines = [];
+        hasTimestamp = false;
         lyricsList.innerHTML = '<div class="lyric-empty">歌词加载中...</div>';
 
         fetch(song.lrc)
@@ -115,23 +133,27 @@
                 if (meta.title) titleEl.textContent = meta.title;
                 if (meta.artist) artistEl.textContent = meta.artist;
 
-                const { lines, hasTimestamp } = parseLRC(text);
-                if (hasTimestamp && lines.length) {
+                const { lines, hasTimestamp: hasTS } = parseLRC(text);
+                hasTimestamp = hasTS;
+                if (hasTS && lines.length) {
                     lyrics = lines;
                 } else {
-                    // 无时间戳，提取纯文本歌词（去掉元数据标签行）
-                    lyricsText = text
+                    // 无时间戳，提取纯文本歌词行（去掉元数据标签行）
+                    lyricsLines = text
                         .split(/\r?\n/)
+                        .map(line => line.trim())
                         .filter(line => {
-                            // 保留非元数据且非空的行
-                            if (!line.trim()) return true; // 保留空行作为段落分隔
-                            const isMeta = /^\[(ti|ar|al|length|by|re|offset|tool|ve|la|ku|ma|pu|ac|ai|ap|au|co|by|in|it|se|li):/i.test(line.trim());
+                            if (!line) return true; // 保留空行作为段落分隔
+                            const isMeta = /^\[(ti|ar|al|length|by|re|offset|tool|ve|la|ku|ma|pu|ac|ai|ap|au|co|in|it|se|li):/i.test(line);
                             return !isMeta;
-                        })
-                        .join('\n')
-                        .replace(/^\s+/, '');
+                        });
+                    // 去掉首尾的空行
+                    while (lyricsLines.length && !lyricsLines[0]) lyricsLines.shift();
+                    while (lyricsLines.length && !lyricsLines[lyricsLines.length - 1]) lyricsLines.pop();
                 }
-                renderLyrics(hasTimestamp);
+                renderLyrics();
+                // 尝试分配时间戳（需要audio.duration已加载）
+                assignTimestamps();
             })
             .catch(() => {
                 lyricsList.innerHTML = '<div class="lyric-empty">歌词加载失败</div>';
@@ -244,6 +266,8 @@
             const durEl = document.getElementById(`dur-${currentIndex}`);
             if (durEl) durEl.textContent = formatTime(audio.duration);
         }
+        // 音频时长加载完成后，为无时间戳歌词分配时间
+        assignTimestamps();
     });
     audio.addEventListener('timeupdate', () => {
         const cur = audio.currentTime;
