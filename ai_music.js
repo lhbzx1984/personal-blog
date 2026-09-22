@@ -11,7 +11,12 @@
         { name: '心随飞翔', artist: '碳基圈', mp3: 'AI音乐/心随飞翔-版本2.mp3', lrc: 'AI音乐/心随飞翔-版本2.lrc' },
         { name: '校园初恋', artist: '碳基圈', mp3: 'AI音乐/校园初恋.mp3', lrc: 'AI音乐/校园初恋.lrc' },
         { name: '狮驼岭夜关', artist: '碳基圈', mp3: 'AI音乐/狮驼岭夜关-版本2.mp3', lrc: 'AI音乐/狮驼岭夜关-版本2.lrc' },
-        { name: '青春永动', artist: '碳基圈', mp3: 'AI音乐/青春永动-版本2.mp3', lrc: 'AI音乐/青春永动-版本2.lrc' }
+        { name: '青春永动', artist: '碳基圈', mp3: 'AI音乐/青春永动-版本2.mp3', lrc: 'AI音乐/青春永动-版本2.lrc' },
+        { name: 'Saltwater Hands', artist: '碳基圈', mp3: 'AI音乐/Saltwater Hands-版本2.mp3', lrc: 'AI音乐/Saltwater Hands-版本2.lrc' },
+        { name: '灯火照不亮胸膛', artist: '碳基圈', mp3: 'AI音乐/灯火照不亮胸膛-版本2.mp3', lrc: 'AI音乐/灯火照不亮胸膛-版本2.lrc' },
+        { name: '九月站台', artist: '碳基圈', mp3: 'AI音乐/九月站台.mp3', lrc: 'AI音乐/九月站台.lrc' },
+        { name: '楼兰残影', artist: '碳基圈', mp3: 'AI音乐/楼兰残影-版本2.mp3', lrc: 'AI音乐/楼兰残影-版本2.lrc' },
+        { name: '四十岁的重量', artist: '碳基圈', mp3: 'AI音乐/四十岁的重量.mp3', lrc: 'AI音乐/四十岁的重量.lrc' }
     ];
 
     // DOM 元素
