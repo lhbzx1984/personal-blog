@@ -26,20 +26,15 @@
             background: linear-gradient(180deg, rgba(10,10,15,0.6) 0%, rgba(10,10,15,0.85) 100%);
         }
 
-        /* 鼠标聚光灯效果：滑过处背景图变清晰 */
-        .alumni-bg-spotlight {
+        /* 鼠标流水聚光灯效果：Canvas实现自然渐隐 */
+        #spotlight-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url("https://aka.doubaocdn.com/s/p2NHNrwf3Y") center/cover no-repeat;
             z-index: 1;
-            filter: brightness(1);
-            -webkit-mask-image: radial-gradient(circle 120px at var(--mx, 50%) var(--my, 50%), rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-            mask-image: radial-gradient(circle 120px at var(--mx, 50%) var(--my, 50%), rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
             pointer-events: none;
-            transition: -webkit-mask-image 0.1s ease;
         }
 
         .alumni-section {
@@ -281,7 +276,7 @@
 </head>
 <body>
     <div class="alumni-bg"></div>
-    <div class="alumni-bg-spotlight" id="spotlight"></div>
+    <canvas id="spotlight-canvas"></canvas>
     <canvas id="particles-canvas"></canvas>
     <div class="grid-overlay"></div>
 
@@ -340,14 +335,120 @@
 
     <script src="common.js"></script>
     <script>
-        // 鼠标聚光灯效果：跟随鼠标更新CSS变量
+        // 鼠标流水聚光灯：Canvas实现，滑过处背景图清晰显示，离开后自然渐隐
         (function () {
-            var spotlight = document.getElementById('spotlight');
-            if (!spotlight) return;
+            var canvas = document.getElementById('spotlight-canvas');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            var bgImg = new Image();
+            bgImg.crossOrigin = 'anonymous';
+            var imgReady = false;
+            var mouseX = -999, mouseY = -999;
+            var prevX = -999, prevY = -999;
+            var isMoving = false;
+            var moveTimer = null;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            bgImg.onload = function () { imgReady = true; };
+            bgImg.src = 'https://aka.doubaocdn.com/s/p2NHNrwf3Y';
+
+            // 鼠标移动时绘制清晰区域
             document.addEventListener('mousemove', function (e) {
-                spotlight.style.setProperty('--mx', e.clientX + 'px');
-                spotlight.style.setProperty('--my', e.clientY + 'px');
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                isMoving = true;
+                clearTimeout(moveTimer);
+                moveTimer = setTimeout(function () { isMoving = false; }, 200);
             });
+
+            function render() {
+                // 每帧逐渐淡出已绘制内容，实现自然渐隐
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.fillStyle = 'rgba(0,0,0,0.04)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 鼠标移动时在轨迹上绘制清晰背景
+                if (imgReady && (isMoving || prevX !== -999)) {
+                    ctx.globalCompositeOperation = 'source-over';
+                    // 在当前和上一个鼠标位置之间插值绘制，形成流畅轨迹
+                    var dx = mouseX - prevX;
+                    var dy = mouseY - prevY;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    var steps = Math.max(1, Math.ceil(dist / 8));
+                    for (var i = 0; i <= steps; i++) {
+                        var t = i / steps;
+                        var x = prevX + dx * t;
+                        var y = prevY + dy * t;
+                        var r = 80;
+                        var grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                        grad.addColorStop(0, 'rgba(255,255,255,1)');
+                        grad.addColorStop(0.4, 'rgba(255,255,255,0.5)');
+                        grad.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    prevX = mouseX;
+                    prevY = mouseY;
+                    if (!isMoving) { prevX = -999; prevY = -999; }
+                }
+
+                requestAnimationFrame(render);
+            }
+
+            // 先用背景图填充，再通过混合模式只保留鼠标轨迹区域
+            // 使用 clip 策略：先绘制圆形遮罩，再绘制背景图
+            function renderWithBg() {
+                // 淡出
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.fillStyle = 'rgba(0,0,0,0.04)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (imgReady && (isMoving || (prevX !== -999))) {
+                    ctx.globalCompositeOperation = 'source-over';
+                    var dx = mouseX - prevX;
+                    var dy = mouseY - prevY;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    var steps = Math.max(1, Math.ceil(dist / 8));
+                    for (var i = 0; i <= steps; i++) {
+                        var t = i / steps;
+                        var x = prevX + dx * t;
+                        var y = prevY + dy * t;
+                        var r = 80;
+                        // 用圆形裁剪绘制背景图
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+                        ctx.restore();
+                        // 软化边缘
+                        ctx.globalCompositeOperation = 'destination-out';
+                        var edgeGrad = ctx.createRadialGradient(x, y, r * 0.6, x, y, r);
+                        edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                        edgeGrad.addColorStop(1, 'rgba(0,0,0,0.6)');
+                        ctx.fillStyle = edgeGrad;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalCompositeOperation = 'source-over';
+                    }
+                    prevX = mouseX;
+                    prevY = mouseY;
+                    if (!isMoving) { prevX = -999; prevY = -999; }
+                }
+
+                requestAnimationFrame(renderWithBg);
+            }
+
+            renderWithBg();
         })();
     </script>
     <script src="alumni.js?v=2"></script>
