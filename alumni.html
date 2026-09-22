@@ -26,6 +26,22 @@
             background: linear-gradient(180deg, rgba(10,10,15,0.6) 0%, rgba(10,10,15,0.85) 100%);
         }
 
+        /* 鼠标聚光灯效果：滑过处背景图变清晰 */
+        .alumni-bg-spotlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("https://aka.doubaocdn.com/s/p2NHNrwf3Y") center/cover no-repeat;
+            z-index: 1;
+            filter: brightness(1);
+            -webkit-mask-image: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%);
+            mask-image: radial-gradient(circle 220px at var(--mx, 50%) var(--my, 50%), rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%);
+            pointer-events: none;
+            transition: -webkit-mask-image 0.1s ease;
+        }
+
         .alumni-section {
             min-height: 100vh;
             padding: 120px 60px 80px;
@@ -265,6 +281,7 @@
 </head>
 <body>
     <div class="alumni-bg"></div>
+    <div class="alumni-bg-spotlight" id="spotlight"></div>
     <canvas id="particles-canvas"></canvas>
     <div class="grid-overlay"></div>
 
@@ -322,6 +339,17 @@
     </div>
 
     <script src="common.js"></script>
+    <script>
+        // 鼠标聚光灯效果：跟随鼠标更新CSS变量
+        (function () {
+            var spotlight = document.getElementById('spotlight');
+            if (!spotlight) return;
+            document.addEventListener('mousemove', function (e) {
+                spotlight.style.setProperty('--mx', e.clientX + 'px');
+                spotlight.style.setProperty('--my', e.clientY + 'px');
+            });
+        })();
+    </script>
     <script src="alumni.js?v=2"></script>
 </body>
 </html>
