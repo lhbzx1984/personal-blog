@@ -13,8 +13,16 @@
             link: 'https://blog.yuan0o0.top/',
             linkText: '访问个人主页'
         },
-        // 位置 2-10：空位占位
-        ...Array(9).fill(null)
+        {
+            name: '郭一铭',
+            info: '25级智能交互设计',
+            desc: '交互设计新锐，专注用户体验与界面美学，个人网站展示设计作品与思考。',
+            bg: '优秀校友及项目/郭一铭_25级智能交互设计/郭一铭.jpg',
+            link: 'https://wangye-beryl.vercel.app',
+            linkText: '访问个人主页'
+        },
+        // 位置 3-10：空位占位
+        ...Array(8).fill(null)
     ];
 
     const totalCards = alumni.length; // 10
