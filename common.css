@@ -753,6 +753,7 @@
         .project-card:nth-child(22) .project-image { background-image: url("项目背景图/22_FDE前置部署工程师.jpg"); }
         .project-card:nth-child(23) .project-image { background-image: url("项目背景图/23_LLM_API接口调用.jpg"); }
         .project-card:nth-child(24) .project-image { background-image: url("项目背景图/24_AI智能体工具集.jpg"); }
+        .project-card:nth-child(25) .project-image { background-image: url("项目背景图/25_深度学习工具集.jpg"); }
 
         .project-image::after {
             content: '';
