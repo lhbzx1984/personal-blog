@@ -754,6 +754,7 @@
         .project-card:nth-child(23) .project-image { background-image: url("项目背景图/23_LLM_API接口调用.jpg"); }
         .project-card:nth-child(24) .project-image { background-image: url("项目背景图/24_AI智能体工具集.jpg"); }
         .project-card:nth-child(25) .project-image { background-image: url("项目背景图/25_深度学习工具集.jpg"); }
+        .project-card:nth-child(26) .project-image { background-image: url("项目背景图/26_Python基础与实践.jpg"); }
 
         .project-image::after {
             content: '';
