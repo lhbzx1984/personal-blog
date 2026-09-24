@@ -1,9 +1,10 @@
 // AI音乐播放器
 (function () {
-    const audio = document.getElementById('bgMusic');
+    // 使用全局持久音频元素（跨页面不中断）
+    const audio = window.__globalAudio;
     if (!audio) return;
 
-    // 歌曲列表
+    // 歌曲列表（共享到全局，供切歌逻辑使用）
     const songs = [
         { name: '南墙火焰', artist: '碳基圈', mp3: 'AI音乐/南墙火焰.mp3', lrc: 'AI音乐/南墙火焰.lrc' },
         { name: '平凡的心', artist: '碳基圈', mp3: 'AI音乐/平凡的心-版本2.mp3', lrc: 'AI音乐/平凡的心.lrc' },
@@ -18,6 +19,9 @@
         { name: '楼兰残影', artist: '碳基圈', mp3: 'AI音乐/楼兰残影-版本2.mp3', lrc: 'AI音乐/楼兰残影-版本2.lrc' },
         { name: '四十岁的重量', artist: '碳基圈', mp3: 'AI音乐/四十岁的重量.mp3', lrc: 'AI音乐/四十岁的重量.lrc' }
     ];
+
+    // 共享到全局，供跨页面切歌使用
+    window.__music.songs = songs;
 
     // DOM 元素
     const playBtn = document.getElementById('playBtn');
@@ -201,19 +205,32 @@
         });
     }
 
-    // 播放指定歌曲
+    // 播放指定歌曲（调用全局切歌，保证跨页面状态一致）
     function playSong(index) {
         if (index < 0 || index >= songs.length) return;
         currentIndex = index;
         const song = songs[index];
-        audio.src = song.mp3;
         titleEl.textContent = song.name;
         artistEl.textContent = song.artist;
         updatePlaylistActive();
         loadLyrics(song);
-        audio.play().catch(() => {
-            // 自动播放被阻止，等待用户点击
-        });
+        if (window.__playGlobalSong) window.__playGlobalSong(index);
+    }
+
+    // 同步 UI 到当前全局播放状态
+    function syncUI() {
+        const idx = window.__music.currentIndex;
+        if (idx >= 0 && songs[idx]) {
+            currentIndex = idx;
+            const song = songs[idx];
+            titleEl.textContent = song.name;
+            artistEl.textContent = song.artist;
+            updatePlaylistActive();
+            loadLyrics(song);
+            if (window.__updateMiniTrack) window.__updateMiniTrack(song.name);
+        }
+        playBtn.textContent = audio.paused ? '▶' : '⏸';
+        disc.classList.toggle('playing', !audio.paused);
     }
 
     // 播放/暂停
@@ -242,6 +259,7 @@
     // 播放模式切换
     modeBtn.addEventListener('click', () => {
         mode = (mode + 1) % modes.length;
+        window.__music.mode = mode;
         modeBtn.textContent = modes[mode].icon;
         modeLabel.textContent = modes[mode].label;
         modeBtn.classList.toggle('active', mode === 1);
@@ -256,50 +274,55 @@
         }
     });
 
-    // 音频事件
-    audio.addEventListener('play', () => {
-        playBtn.textContent = '⏸';
-        disc.classList.add('playing');
-    });
-    audio.addEventListener('pause', () => {
-        playBtn.textContent = '▶';
-        disc.classList.remove('playing');
-    });
-    audio.addEventListener('loadedmetadata', () => {
+    // 清理上一次 ai_music.js 运行时绑定的音频监听器（SPA 重复执行时避免重复）
+    if (window.__musicCleanup) window.__musicCleanup();
+
+    const onPlay = () => { playBtn.textContent = '⏸'; disc.classList.add('playing'); };
+    const onPause = () => { playBtn.textContent = '▶'; disc.classList.remove('playing'); };
+    const onLoadedMeta = () => {
         durationEl.textContent = formatTime(audio.duration);
         if (currentIndex >= 0) {
             const durEl = document.getElementById(`dur-${currentIndex}`);
             if (durEl) durEl.textContent = formatTime(audio.duration);
         }
-        // 音频时长加载完成后，为无时间戳歌词分配时间
         assignTimestamps();
-    });
-    audio.addEventListener('timeupdate', () => {
+    };
+    const onTimeUpdate = () => {
         const cur = audio.currentTime;
         const dur = audio.duration || 0;
         currentEl.textContent = formatTime(cur);
         fill.style.width = (dur ? (cur / dur) * 100 : 0) + '%';
         updateLyrics(cur);
-    });
-    audio.addEventListener('ended', () => {
-        if (mode === 1) {
-            // 单曲循环
-            audio.currentTime = 0;
-            audio.play().catch(() => {});
-        } else if (mode === 0) {
-            // 列表循环
-            const next = (currentIndex + 1) % songs.length;
-            playSong(next);
-        } else {
-            // 顺序播放
-            if (currentIndex < songs.length - 1) {
-                playSong(currentIndex + 1);
-            } else {
-                playBtn.textContent = '▶';
-                disc.classList.remove('playing');
-            }
+    };
+
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
+    audio.addEventListener('loadedmetadata', onLoadedMeta);
+    audio.addEventListener('timeupdate', onTimeUpdate);
+
+    window.__musicCleanup = () => {
+        audio.removeEventListener('play', onPlay);
+        audio.removeEventListener('pause', onPause);
+        audio.removeEventListener('loadedmetadata', onLoadedMeta);
+        audio.removeEventListener('timeupdate', onTimeUpdate);
+        window.removeEventListener('musicchange', onMusicChange);
+    };
+
+    // 全局切歌时同步 UI
+    function onMusicChange(e) {
+        const { index, song } = e.detail || {};
+        if (index != null && songs[index]) {
+            currentIndex = index;
+            titleEl.textContent = song.name;
+            artistEl.textContent = song.artist;
+            updatePlaylistActive();
+            loadLyrics(song);
         }
-    });
+    }
+    window.addEventListener('musicchange', onMusicChange);
+
+    // 播放模式同步到全局
+    window.__music.mode = mode;
 
     // 歌词同步（仅当有时间戳时）
     function updateLyrics(time) {
@@ -324,4 +347,6 @@
 
     // 初始化
     renderPlaylist();
+    // 若已有全局播放状态（跨页面返回时），同步 UI
+    syncUI();
 })();
