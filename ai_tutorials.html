@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刘海斌 | AI好教程</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="common.css">
+    <!-- pdf.js 用于抽取 PDF 文本，供智能体问答 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // 配置 pdf.js worker
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <style>
+        /* AI好教程 书架页面专用样式 */
+        .tutorials-section {
+            min-height: 100vh;
+            padding: 120px 40px 60px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .tutorials-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+            height: calc(100vh - 200px);
+        }
+
+        /* ===== 左侧书架 ===== */
+        .bookshelf-panel {
+            background: rgba(18, 18, 26, 0.6);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 12px;
+            padding: 24px 16px;
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        }
+
+        .shelf-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: var(--accent-cyan);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .shelf {
+            position: relative;
+            padding: 0 8px;
+        }
+
+        .shelf-board {
+            height: 14px;
+            background: linear-gradient(180deg, #6b4423 0%, #3e2810 100%);
+            border-radius: 2px 2px 4px 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .book {
+            width: 160px;
+            height: 220px;
+            margin: 0 auto 20px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), -4px 0 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .book:hover {
+            transform: translateY(-8px) scale(1.04);
+            box-shadow: 0 16px 40px rgba(0, 245, 255, 0.3), 0 0 20px rgba(0, 245, 255, 0.2);
+        }
+
+        .book.active {
+            box-shadow: 0 16px 40px rgba(0, 245, 255, 0.5), 0 0 30px rgba(0, 245, 255, 0.4);
+            border: 2px solid var(--accent-cyan);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .book-spine {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 8px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.4), transparent);
+        }
+
+        .book-info {
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .book-name {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .book-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ===== 右侧内容区 ===== */
+        .content-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(18, 18, 26, 0.4);
+            border: 1px dashed rgba(0, 245, 255, 0.2);
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-state .icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+        .empty-state h3 { color: var(--text-secondary); font-size: 20px; margin-bottom: 10px; }
+        .empty-state p { font-size: 14px; }
+
+        .reader-container {
+            display: grid;
+            grid-template-rows: 1fr 320px;
+            gap: 16px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        /* PDF 阅读器 */
+        .pdf-viewer {
+            background: rgba(18, 18, 26, 0.6);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .pdf-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(0, 245, 255, 0.08);
+            border-bottom: 1px solid rgba(0, 245, 255, 0.15);
+        }
+
+        .pdf-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent-cyan);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%;
+        }
+
+        .pdf-tools { display: flex; gap: 8px; align-items: center; }
+
+        .pdf-tools button {
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            color: var(--accent-cyan);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.2s ease;
+        }
+        .pdf-tools button:hover { background: rgba(0, 245, 255, 0.25); }
+
+        .pdf-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        /* ===== 智能体助手 ===== */
+        .ai-assistant {
+            background: rgba(18, 18, 26, 0.7);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: rgba(139, 92, 246, 0.1);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .ai-avatar {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+        }
+
+        .ai-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: var(--accent-purple);
+            letter-spacing: 1px;
+        }
+
+        .ai-status {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .ai-status.online { color: #00ff88; }
+        .ai-status.online::before {
+            content: '';
+            display: inline-block;
+            width: 6px; height: 6px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: statusBlink 1.5s infinite;
+        }
+
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .msg { max-width: 85%; padding: 10px 14px; border-radius: 10px; font-size: 13px; line-height: 1.6; word-break: break-word; }
+        .msg.user { align-self: flex-end; background: rgba(0, 245, 255, 0.15); border: 1px solid rgba(0, 245, 255, 0.3); color: var(--text-primary); }
+        .msg.assistant { align-self: flex-start; background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--text-primary); }
+        .msg.system { align-self: center; background: rgba(255,255,255,0.04); color: var(--text-muted); font-size: 11px; max-width: 90%; text-align: center; }
+
+        .msg.assistant .thinking { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-style: italic; }
+
+        .ai-input-area {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px;
+            border-top: 1px solid rgba(139, 92, 246, 0.2);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .ai-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            outline: none;
+            resize: none;
+        }
+        .ai-input:focus { border-color: var(--accent-purple); box-shadow: 0 0 8px rgba(139,92,246,0.3); }
+
+        .ai-send {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            border: none;
+            color: #fff;
+            padding: 0 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: opacity 0.2s;
+        }
+        .ai-send:hover { opacity: 0.85; }
+        .ai-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .typing-dots span {
+            display: inline-block;
+            width: 6px; height: 6px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-5px); opacity: 1; } }
+
+        .chapter-btns { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; }
+        .chapter-btn {
+            background: rgba(0,245,255,0.08);
+            border: 1px solid rgba(0,245,255,0.25);
+            color: var(--accent-cyan);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+        .chapter-btn:hover { background: rgba(0,245,255,0.2); }
+
+        @media (max-width: 900px) {
+            .tutorials-layout { grid-template-columns: 1fr; height: auto; }
+            .reader-container { grid-template-rows: 400px 320px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+    <div class="grid-overlay"></div>
+
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <div class="main-container">
+        <nav>
+            <div class="logo">LIUHAIBIN</div>
+            <ul class="nav-links">
+                <li><a href="index.html">主页</a></li>
+                <li><a href="skills.html">技能</a></li>
+                <li><a href="projects.html">项目</a></li>
+                <li><a href="blog.html">博客</a></li>
+                <li><a href="wechat.html">公众号</a></li>
+                <li><a href="ai_music.html">AI音乐</a></li>
+                <li><a href="alumni.html">优秀校友</a></li>
+                <li><a href="ai_tutorials.html">AI好教程</a></li>
+                <li><a href="index.html#timeline">历程</a></li>
+                <li><a href="index.html#contact">联系</a></li>
+            </ul>
+        </nav>
+
+        <section class="section tutorials-section" id="tutorials">
+            <div class="section-header" style="margin-bottom: 24px;">
+                <span class="section-tag">// AI好教程</span>
+                <h2 class="section-title">AI 好教程书架</h2>
+                <p class="section-subtitle">精选 AI 实战教程，点击书本开启阅读，智能体助手为你抽取章节、答疑解惑</p>
+            </div>
+
+            <div class="tutorials-layout">
+                <!-- 左侧书架 -->
+                <div class="bookshelf-panel">
+                    <div class="shelf-title">📚 我的书架</div>
+                    <div class="shelf">
+                        <div class="shelf-board"></div>
+                        <div class="book" data-book="workbuddy">
+                            <img class="book-cover" src="AI好教程/WorkBuddy封面.jpg" alt="WorkBuddy AI智能体办公实战指导手册">
+                            <div class="book-spine"></div>
+                        </div>
+                        <div class="book-info">
+                            <div class="book-name">WorkBuddy AI智能体办公实战指导手册</div>
+                            <div class="book-meta">V2 · PDF · 智能体办公</div>
+                        </div>
+                        <div class="shelf-board"></div>
+                    </div>
+                </div>
+
+                <!-- 右侧内容 -->
+                <div class="content-panel">
+                    <div class="empty-state" id="emptyState">
+                        <div class="icon">📖</div>
+                        <h3>选择左侧书架上的书开始阅读</h3>
+                        <p>点击书本封面，右侧将加载 PDF 文档，<br>并由 AI 智能体助手为你提供章节抽取与问答服务。</p>
+                    </div>
+
+                    <div class="reader-container" id="readerContainer" style="display:none;">
+                        <!-- PDF 阅读器 -->
+                        <div class="pdf-viewer">
+                            <div class="pdf-header">
+                                <div class="pdf-title" id="pdfTitle">WorkBuddy AI智能体办公实战指导手册_V2.pdf</div>
+                                <div class="pdf-tools">
+                                    <button id="fullscreenBtn">⛶ 全屏</button>
+                                    <button id="newTabBtn">↗ 新窗口</button>
+                                </div>
+                            </div>
+                            <iframe class="pdf-frame" id="pdfFrame" src="" title="PDF阅读器"></iframe>
+                        </div>
+
+                        <!-- 智能体助手 -->
+                        <div class="ai-assistant">
+                            <div class="ai-header">
+                                <div class="ai-avatar">🤖</div>
+                                <div class="ai-title">Agnes 智能体助手</div>
+                                <div class="ai-status online" id="aiStatus">在线</div>
+                            </div>
+                            <div class="ai-messages" id="aiMessages"></div>
+                            <div class="chapter-btns" id="chapterBtns"></div>
+                            <div class="ai-input-area">
+                                <textarea class="ai-input" id="aiInput" rows="1" placeholder="向智能体提问，例如：第三章讲了什么？如何用WorkBuddy处理表格？"></textarea>
+                                <button class="ai-send" id="aiSend">发送</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+    /* ========== AI好教程 书架 + 智能体助手 ========== */
+    (function () {
+        const AGNES_API = 'https://apihub.agnes-ai.com/v1/chat/completions';
+        const AGNES_KEY = 'sk-ZBiXZWj163saZNZ5X6RiTAgPZBWZLdb13L8TZydt2NadIxiX';
+        const AGNES_MODEL = 'agnes-2.5-flash';
+
+        // 书籍数据
+        const books = {
+            workbuddy: {
+                title: 'WorkBuddy AI智能体办公实战指导手册',
+                file: 'AI好教程/WorkBuddy AI智能体办公实战指导手册_V2.pdf',
+                desc: 'WorkBuddy AI智能体办公实战指导手册，涵盖AI智能体在办公场景（文档、表格、演示、邮件、自动化）中的实战应用。'
+            }
+        };
+
+        let currentBook = null;
+        let bookFullText = '';     // PDF 抽取的全文
+        let chatHistory = [];      // 对话历史
+        let isLoading = false;
+
+        const emptyState = document.getElementById('emptyState');
+        const readerContainer = document.getElementById('readerContainer');
+        const pdfFrame = document.getElementById('pdfFrame');
+        const pdfTitle = document.getElementById('pdfTitle');
+        const aiMessages = document.getElementById('aiMessages');
+        const aiInput = document.getElementById('aiInput');
+        const aiSend = document.getElementById('aiSend');
+        const aiStatus = document.getElementById('aiStatus');
+        const chapterBtns = document.getElementById('chapterBtns');
+
+        // 点击书本
+        document.querySelectorAll('.book').forEach(bookEl => {
+            bookEl.addEventListener('click', () => {
+                const id = bookEl.dataset.book;
+                openBook(id);
+            });
+        });
+
+        function openBook(id) {
+            const book = books[id];
+            if (!book) return;
+            currentBook = id;
+
+            document.querySelectorAll('.book').forEach(b => b.classList.toggle('active', b.dataset.book === id));
+            emptyState.style.display = 'none';
+            readerContainer.style.display = 'grid';
+
+            pdfTitle.textContent = book.file.split('/').pop();
+            pdfFrame.src = book.file;
+
+            // 清空对话并初始化
+            chatHistory = [];
+            aiMessages.innerHTML = '';
+            chapterBtns.innerHTML = '';
+            appendSystemMsg('正在加载《' + book.title + '》并抽取文本，请稍候…');
+            setStatus('解析中…', false);
+
+            extractPdfText(book.file).then(text => {
+                bookFullText = text || '';
+                setStatus('在线', true);
+                const wordCount = bookFullText.length;
+                appendSystemMsg(`📄 《${book.title}》文本已加载（约 ${wordCount} 字）。你可以问我任意章节的内容，或点击下方快捷问题。`);
+                suggestQuickQuestions();
+            }).catch(err => {
+                console.error(err);
+                appendSystemMsg('⚠️ PDF 文本抽取失败，但仍可基于书名进行问答。');
+                setStatus('在线', true);
+                suggestQuickQuestions();
+            });
+        }
+
+        // 用 pdf.js 抽取 PDF 文本
+        function extractPdfText(url) {
+            if (!window.pdfjsLib) return Promise.reject('pdf.js未加载');
+            return pdfjsLib.getDocument(url).promise.then(pdf => {
+                const tasks = [];
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    tasks.push(pdf.getPage(i).then(page =>
+                        page.getTextContent().then(content =>
+                            content.items.map(it => it.str).join(' ')
+                        )
+                    ));
+                }
+                return Promise.all(tasks).then(pages => pages.join('\n'));
+            });
+        }
+
+        // 快捷问题按钮
+        function suggestQuickQuestions() {
+            const qs = [
+                '这本书的主要内容是什么？',
+                '帮我列出所有章节标题',
+                'WorkBuddy如何处理Excel表格？',
+                '如何用AI智能体自动化办公？'
+            ];
+            chapterBtns.innerHTML = '';
+            qs.forEach(q => {
+                const btn = document.createElement('button');
+                btn.className = 'chapter-btn';
+                btn.textContent = q;
+                btn.onclick = () => { aiInput.value = q; sendMessage(); };
+                chapterBtns.appendChild(btn);
+            });
+        }
+
+        function setStatus(text, online) {
+            aiStatus.textContent = text;
+            aiStatus.className = 'ai-status' + (online ? ' online' : '');
+        }
+
+        function appendMsg(role, text, thinking) {
+            const div = document.createElement('div');
+            div.className = 'msg ' + role;
+            let html = '';
+            if (thinking) html += `<div class="thinking">${thinking}</div>`;
+            html += text.replace(/\n/g, '<br>');
+            div.innerHTML = html;
+            aiMessages.appendChild(div);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+            return div;
+        }
+
+        function appendSystemMsg(text) {
+            const div = document.createElement('div');
+            div.className = 'msg system';
+            div.textContent = text;
+            aiMessages.appendChild(div);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+
+        function appendTyping() {
+            const div = document.createElement('div');
+            div.className = 'msg assistant';
+            div.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+            aiMessages.appendChild(div);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+            return div;
+        }
+
+        // 发送消息到 Agnes API
+        async function sendMessage() {
+            const q = aiInput.value.trim();
+            if (!q || isLoading) return;
+            aiInput.value = '';
+            appendMsg('user', q);
+            chatHistory.push({ role: 'user', content: q });
+            isLoading = true;
+            aiSend.disabled = true;
+            const typingEl = appendTyping();
+
+            // 构建上下文：书籍描述 + 抽取的全文（截断避免超长）
+            const book = books[currentBook];
+            const ctxLimit = 8000;
+            const context = bookFullText.length > ctxLimit
+                ? bookFullText.slice(0, ctxLimit) + '\n...（内容过长已截断）'
+                : bookFullText;
+
+            const systemPrompt = `你是《${book.title}》的智能助教。请基于以下书籍内容回答用户问题，帮助用户快速抽取章节信息、定位知识点、解答疑问。回答要准确、简洁、有结构。如果问题在书中找不到明确答案，请如实说明并给出合理建议。\n\n【书籍简介】${book.desc}\n\n【书籍正文】\n${context}`;
+
+            const messages = [{ role: 'system', content: systemPrompt }].concat(chatHistory);
+
+            try {
+                const res = await fetch(AGNES_API, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + AGNES_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: AGNES_MODEL,
+                        messages: messages,
+                        temperature: 0.5,
+                        max_tokens: 1500
+                    })
+                });
+
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error(`API ${res.status}: ${errText.slice(0, 200)}`);
+                }
+
+                const data = await res.json();
+                const answer = data.choices && data.choices[0] && data.choices[0].message
+                    ? data.choices[0].message.content
+                    : '（未获取到回复）';
+
+                typingEl.remove();
+                appendMsg('assistant', answer);
+                chatHistory.push({ role: 'assistant', content: answer });
+            } catch (e) {
+                typingEl.remove();
+                appendMsg('assistant', '❌ 智能体调用失败：' + e.message);
+                console.error(e);
+            } finally {
+                isLoading = false;
+                aiSend.disabled = false;
+                aiInput.focus();
+            }
+        }
+
+        aiSend.addEventListener('click', sendMessage);
+        aiInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 自适应输入框高度
+        aiInput.addEventListener('input', () => {
+            aiInput.style.height = 'auto';
+            aiInput.style.height = Math.min(aiInput.scrollHeight, 80) + 'px';
+        });
+
+        // PDF 工具按钮
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            if (pdfFrame.requestFullscreen) pdfFrame.requestFullscreen();
+            else if (pdfFrame.webkitRequestFullscreen) pdfFrame.webkitRequestFullscreen();
+        });
+        document.getElementById('newTabBtn').addEventListener('click', () => {
+            if (currentBook) window.open(books[currentBook].file, '_blank');
+        });
+    })();
+    </script>
+</body>
+</html>
