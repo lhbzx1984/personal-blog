@@ -140,9 +140,8 @@
         .empty-state p { font-size: 14px; }
 
         .reader-container {
-            display: grid;
-            grid-template-rows: 1fr 320px;
-            gap: 16px;
+            display: flex;
+            flex-direction: column;
             height: 100%;
             min-height: 0;
         }
@@ -233,14 +232,85 @@
 
         /* ===== 智能体助手 ===== */
         .ai-assistant {
-            background: rgba(18, 18, 26, 0.7);
+            background: rgba(18, 18, 26, 0.92);
             border: 1px solid rgba(139, 92, 246, 0.3);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             min-height: 0;
+            height: 100%;
         }
+
+        /* 悬浮按钮 */
+        .ai-fab {
+            position: fixed;
+            right: 28px;
+            bottom: 28px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9998;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .ai-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.7);
+        }
+        .ai-fab-icon { font-size: 26px; }
+        .ai-fab-badge {
+            position: absolute;
+            top: -2px; right: -2px;
+            min-width: 18px; height: 18px;
+            padding: 0 5px;
+            background: var(--accent-magenta);
+            color: #fff;
+            font-size: 11px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* 悬浮面板 */
+        .ai-float-panel {
+            position: fixed;
+            right: 28px;
+            bottom: 100px;
+            width: 380px;
+            height: 520px;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(139, 92, 246, 0.25);
+            border-radius: 14px;
+            overflow: hidden;
+            animation: panelIn 0.25s ease;
+        }
+        .ai-float-panel.open { display: block; }
+        @keyframes panelIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .ai-close {
+            margin-left: auto;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .ai-close:hover { color: var(--accent-magenta); background: rgba(255,0,170,0.1); }
 
         .ai-header {
             display: flex;
@@ -365,7 +435,8 @@
 
         @media (max-width: 900px) {
             .tutorials-layout { grid-template-columns: 1fr; height: auto; }
-            .reader-container { grid-template-rows: 400px 320px; }
+            .reader-container { min-height: 500px; }
+            .ai-float-panel { width: calc(100vw - 32px); right: 16px; left: 16px; height: 60vh; }
         }
     </style>
 </head>
@@ -427,7 +498,7 @@
                     </div>
 
                     <div class="reader-container" id="readerContainer" style="display:none;">
-                        <!-- PDF 阅读器 -->
+                        <!-- PDF 阅读器（右侧仅此区域） -->
                         <div class="pdf-viewer">
                             <div class="pdf-header">
                                 <div class="pdf-title" id="pdfTitle">WorkBuddy AI智能体办公实战指导手册_V2.pdf</div>
@@ -437,26 +508,34 @@
                                 </div>
                             </div>
                             <div class="pdf-loading" id="pdfLoading">
-                            <div class="pdf-loading-spinner"></div>
-                            <div class="pdf-loading-text">PDF 加载中…</div>
+                                <div class="pdf-loading-spinner"></div>
+                                <div class="pdf-loading-text">PDF 加载中…</div>
+                            </div>
+                            <iframe class="pdf-frame" id="pdfFrame" src="" title="PDF阅读器" onload="document.getElementById('pdfLoading').style.display='none'"></iframe>
                         </div>
-                        <iframe class="pdf-frame" id="pdfFrame" src="" title="PDF阅读器" onload="document.getElementById('pdfLoading').style.display='none'"></iframe>
-                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- 智能体助手 -->
-                        <div class="ai-assistant">
-                            <div class="ai-header">
-                                <div class="ai-avatar">🤖</div>
-                                <div class="ai-title">Agnes 智能体助手</div>
-                                <div class="ai-status online" id="aiStatus">在线</div>
-                            </div>
-                            <div class="ai-messages" id="aiMessages"></div>
-                            <div class="chapter-btns" id="chapterBtns"></div>
-                            <div class="ai-input-area">
-                                <textarea class="ai-input" id="aiInput" rows="1" placeholder="向智能体提问，例如：第三章讲了什么？如何用WorkBuddy处理表格？"></textarea>
-                                <button class="ai-send" id="aiSend">发送</button>
-                            </div>
-                        </div>
+            <!-- 悬浮智能体助手 -->
+            <div class="ai-fab" id="aiFab" title="AI 智能体助手">
+                <span class="ai-fab-icon">🤖</span>
+                <span class="ai-fab-badge" id="aiFabBadge" style="display:none;"></span>
+            </div>
+
+            <div class="ai-float-panel" id="aiFloatPanel">
+                <div class="ai-assistant">
+                    <div class="ai-header">
+                        <div class="ai-avatar">🤖</div>
+                        <div class="ai-title">Agnes 智能体助手</div>
+                        <div class="ai-status online" id="aiStatus">在线</div>
+                        <button class="ai-close" id="aiClose" title="关闭">✕</button>
+                    </div>
+                    <div class="ai-messages" id="aiMessages"></div>
+                    <div class="chapter-btns" id="chapterBtns"></div>
+                    <div class="ai-input-area">
+                        <textarea class="ai-input" id="aiInput" rows="1" placeholder="向智能体提问，例如：第三章讲了什么？如何用WorkBuddy处理表格？"></textarea>
+                        <button class="ai-send" id="aiSend">发送</button>
                     </div>
                 </div>
             </div>
@@ -663,6 +742,7 @@
 
                 typingEl.remove();
                 appendMsg('assistant', answer);
+                if (window.__notifyAssistantReply) window.__notifyAssistantReply();
                 chatHistory.push({ role: 'assistant', content: answer });
             } catch (e) {
                 typingEl.remove();
@@ -697,6 +777,31 @@
         document.getElementById('newTabBtn').addEventListener('click', () => {
             if (currentBook) window.open(books[currentBook].file, '_blank');
         });
+
+        // 悬浮面板开关
+        const aiFab = document.getElementById('aiFab');
+        const aiFloatPanel = document.getElementById('aiFloatPanel');
+        const aiClose = document.getElementById('aiClose');
+        aiFab.addEventListener('click', () => {
+            aiFloatPanel.classList.toggle('open');
+        });
+        aiClose.addEventListener('click', () => {
+            aiFloatPanel.classList.remove('open');
+        });
+
+        // 点击悬浮按钮时清除未读红点
+        aiFab.addEventListener('click', () => {
+            document.getElementById('aiFabBadge').style.display = 'none';
+        });
+
+        // 供 sendMessage 调用：面板关闭时收到新回复显示红点
+        window.__notifyAssistantReply = function () {
+            if (!aiFloatPanel.classList.contains('open')) {
+                const badge = document.getElementById('aiFabBadge');
+                badge.style.display = 'flex';
+                badge.textContent = '1';
+            }
+        };
     })();
     </script>
 </body>
