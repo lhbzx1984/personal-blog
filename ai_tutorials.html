@@ -6,14 +6,8 @@
     <title>刘海斌 | AI好教程</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="common.css">
-    <!-- pdf.js 用于抽取 PDF 文本，供智能体问答 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        // 配置 pdf.js worker
-        if (window.pdfjsLib) {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-    </script>
+    <!-- 预提取的书籍文本（RAG 上下文），由 _extract_pdf.py 生成 -->
+    <script src="AI好教程/workbuddy_text.js?v=1"></script>
     <style>
         /* AI好教程 书架页面专用样式 */
         .tutorials-section {
@@ -204,6 +198,38 @@
             border: none;
             background: #fff;
         }
+
+        .pdf-loading {
+            position: absolute;
+            inset: 50px 0 0 0;
+            background: rgba(10, 10, 15, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 5;
+            color: var(--accent-cyan);
+        }
+
+        .pdf-loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(0, 245, 255, 0.2);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        .pdf-loading-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .pdf-viewer { position: relative; }
 
         /* ===== 智能体助手 ===== */
         .ai-assistant {
@@ -410,7 +436,11 @@
                                     <button id="newTabBtn">↗ 新窗口</button>
                                 </div>
                             </div>
-                            <iframe class="pdf-frame" id="pdfFrame" src="" title="PDF阅读器"></iframe>
+                            <div class="pdf-loading" id="pdfLoading">
+                            <div class="pdf-loading-spinner"></div>
+                            <div class="pdf-loading-text">PDF 加载中…</div>
+                        </div>
+                        <iframe class="pdf-frame" id="pdfFrame" src="" title="PDF阅读器" onload="document.getElementById('pdfLoading').style.display='none'"></iframe>
                         </div>
 
                         <!-- 智能体助手 -->
@@ -451,7 +481,8 @@
         };
 
         let currentBook = null;
-        let bookFullText = '';     // PDF 抽取的全文
+        let bookFullText = '';     // 书籍全文（预提取）
+        let bookChunks = [];       // 书籍分块（用于 RAG 检索）
         let chatHistory = [];      // 对话历史
         let isLoading = false;
 
@@ -483,43 +514,54 @@
             readerContainer.style.display = 'grid';
 
             pdfTitle.textContent = book.file.split('/').pop();
-            pdfFrame.src = book.file;
+            const pdfLoading = document.getElementById('pdfLoading');
+            // 懒加载 PDF：仅在打开书本时设置 src，避免页面初始加载阻塞
+            if (pdfFrame.dataset.loaded !== book.file) {
+                pdfLoading.style.display = 'flex';
+                pdfFrame.src = book.file;
+                pdfFrame.dataset.loaded = book.file;
+            } else {
+                pdfLoading.style.display = 'none';
+            }
 
-            // 清空对话并初始化
+            // 清空对话并初始化（直接使用预提取文本，无需运行时解析）
             chatHistory = [];
             aiMessages.innerHTML = '';
             chapterBtns.innerHTML = '';
-            appendSystemMsg('正在加载《' + book.title + '》并抽取文本，请稍候…');
-            setStatus('解析中…', false);
 
-            extractPdfText(book.file).then(text => {
-                bookFullText = text || '';
+            const bookData = window.WORKBUDDY_BOOK;
+            if (bookData && bookData.fullText) {
+                bookFullText = bookData.fullText;
+                bookChunks = bookData.chunks || [];
                 setStatus('在线', true);
-                const wordCount = bookFullText.length;
-                appendSystemMsg(`📄 《${book.title}》文本已加载（约 ${wordCount} 字）。你可以问我任意章节的内容，或点击下方快捷问题。`);
-                suggestQuickQuestions();
-            }).catch(err => {
-                console.error(err);
-                appendSystemMsg('⚠️ PDF 文本抽取失败，但仍可基于书名进行问答。');
+                appendSystemMsg(`📄 《${book.title}》已就绪（共 ${bookData.totalPages} 页，约 ${bookData.charCount} 字）。可直接向我提问，或点击快捷问题。`);
+            } else {
+                bookFullText = '';
+                bookChunks = [];
                 setStatus('在线', true);
-                suggestQuickQuestions();
-            });
+                appendSystemMsg('⚠️ 未找到书籍文本数据，但仍可基于书名进行问答。');
+            }
+            suggestQuickQuestions();
         }
 
-        // 用 pdf.js 抽取 PDF 文本
-        function extractPdfText(url) {
-            if (!window.pdfjsLib) return Promise.reject('pdf.js未加载');
-            return pdfjsLib.getDocument(url).promise.then(pdf => {
-                const tasks = [];
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    tasks.push(pdf.getPage(i).then(page =>
-                        page.getTextContent().then(content =>
-                            content.items.map(it => it.str).join(' ')
-                        )
-                    ));
-                }
-                return Promise.all(tasks).then(pages => pages.join('\n'));
-            });
+        // 简易 RAG 检索：按关键词匹配分块，返回最相关的 topK 块文本
+        function retrieveChunks(query, topK) {
+            topK = topK || 4;
+            if (!bookChunks.length) return '';
+            // 提取查询中的中文词/关键词（按 2-3 字滑窗 + 标点切分）
+            const tokens = query.replace(/[\s，。、！？；：,.!?;:"'()（）《》<>\[\]【】]/g, ' ')
+                .split(/\s+/).filter(t => t.length > 1);
+            const scored = bookChunks.map(ch => {
+                let score = 0;
+                const text = ch.text;
+                tokens.forEach(t => { if (text.indexOf(t) !== -1) score += t.length; });
+                return { ch, score };
+            }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, topK);
+            if (!scored.length) {
+                // 无匹配则返回前几块作为兜底
+                return bookChunks.slice(0, topK).map(c => `[第${c.page}页] ${c.text}`).join('\n\n');
+            }
+            return scored.map(x => `[第${x.ch.page}页] ${x.ch.text}`).join('\n\n');
         }
 
         // 快捷问题按钮
@@ -585,14 +627,12 @@
             aiSend.disabled = true;
             const typingEl = appendTyping();
 
-            // 构建上下文：书籍描述 + 抽取的全文（截断避免超长）
+            // RAG：根据用户问题检索最相关的书籍分块作为上下文
             const book = books[currentBook];
-            const ctxLimit = 8000;
-            const context = bookFullText.length > ctxLimit
-                ? bookFullText.slice(0, ctxLimit) + '\n...（内容过长已截断）'
-                : bookFullText;
+            const retrieved = retrieveChunks(q, 5);
+            const context = retrieved || bookFullText.slice(0, 6000);
 
-            const systemPrompt = `你是《${book.title}》的智能助教。请基于以下书籍内容回答用户问题，帮助用户快速抽取章节信息、定位知识点、解答疑问。回答要准确、简洁、有结构。如果问题在书中找不到明确答案，请如实说明并给出合理建议。\n\n【书籍简介】${book.desc}\n\n【书籍正文】\n${context}`;
+            const systemPrompt = `你是《${book.title}》的智能助教。请严格基于下面提供的书籍内容（RAG检索结果）回答用户问题，帮助用户快速抽取章节信息、定位知识点、解答疑问。回答要准确、简洁、有结构，并尽量标注出处页码。如果检索内容中找不到明确答案，请如实说明，不要编造。\n\n【书籍简介】${book.desc}\n\n【检索到的书籍内容】\n${context}`;
 
             const messages = [{ role: 'system', content: systemPrompt }].concat(chatHistory);
 
