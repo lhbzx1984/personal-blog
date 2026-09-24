@@ -65,11 +65,13 @@
 
         ringContainer.appendChild(card);
 
-        // 点击卡片跳转
+        // 点击卡片：非活动卡片则旋转至活动；活动卡片则打开其个人主页
         card.addEventListener('click', () => {
             if (i !== currentIndex) {
                 currentIndex = i;
                 updateRing();
+            } else if (person && person.link) {
+                window.open(person.link, '_blank');
             }
         });
     });
