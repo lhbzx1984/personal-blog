@@ -21,8 +21,16 @@
             link: 'https://guoyiming.website',
             linkText: '访问个人主页'
         },
-        // 位置 3-10：空位占位
-        ...Array(8).fill(null)
+        {
+            name: '吴婷婷',
+            info: '25级智能交互设计',
+            desc: 'AI设计新锐，专注大模型应用与多领域设计工具结合，涵盖视觉设计、产品造物与硬件落地，个人作品集展示从政策匹配到AI教育的完整实践。',
+            bg: '优秀校友及项目/吴婷婷_25级智能交互设计/吴婷婷.jpg',
+            link: 'https://ayw79237-sys.github.io/portfolio/',
+            linkText: '访问个人主页'
+        },
+        // 位置 4-10：空位占位
+        ...Array(7).fill(null)
     ];
 
     const totalCards = alumni.length; // 10
