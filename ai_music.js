@@ -17,7 +17,11 @@
         { name: '灯火照不亮胸膛', artist: '碳基圈', mp3: 'AI音乐/灯火照不亮胸膛-版本2.mp3', lrc: 'AI音乐/灯火照不亮胸膛-版本2.lrc' },
         { name: '九月站台', artist: '碳基圈', mp3: 'AI音乐/九月站台.mp3', lrc: 'AI音乐/九月站台.lrc' },
         { name: '楼兰残影', artist: '碳基圈', mp3: 'AI音乐/楼兰残影-版本2.mp3', lrc: 'AI音乐/楼兰残影-版本2.lrc' },
-        { name: '四十岁的重量', artist: '碳基圈', mp3: 'AI音乐/四十岁的重量.mp3', lrc: 'AI音乐/四十岁的重量.lrc' }
+        { name: '四十岁的重量', artist: '碳基圈', mp3: 'AI音乐/四十岁的重量.mp3', lrc: 'AI音乐/四十岁的重量.lrc' },
+        { name: '金田灯火', artist: '碳基圈', mp3: 'AI音乐/金田灯火.mp3', lrc: 'AI音乐/金田灯火.lrc' },
+        { name: '天庭经书', artist: '碳基圈', mp3: 'AI音乐/天庭经书.mp3', lrc: 'AI音乐/天庭经书.lrc' },
+        { name: '旧战袍', artist: '碳基圈', mp3: 'AI音乐/旧战袍.mp3', lrc: 'AI音乐/旧战袍.lrc' },
+        { name: '一将功成万古枯', artist: '碳基圈', mp3: 'AI音乐/一将功成万古枯-版本2.mp3', lrc: 'AI音乐/一将功成万古枯-版本2.lrc' }
     ];
 
     // 共享到全局，供跨页面切歌使用
