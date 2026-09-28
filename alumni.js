@@ -29,8 +29,24 @@
             link: 'https://ayw79237-sys.github.io/portfolio/',
             linkText: '访问个人主页'
         },
-        // 位置 4-10：空位占位
-        ...Array(7).fill(null)
+        {
+            name: '郝康含',
+            info: '24级产品设计',
+            desc: '产品设计新锐，探索设计与技术的融合，个人主页展示产品设计作品与创意实践。',
+            bg: '优秀校友及项目/郝康韩_24级产品设计/07d39ba8e05efab2ba21f90d995070ff.jpg',
+            link: 'https://hkh168.github.io',
+            linkText: '访问个人主页'
+        },
+        {
+            name: '王灿',
+            info: '23级智能交互设计',
+            desc: '智能交互设计实践者，深耕用户体验与交互设计，个人作品集展示从概念到落地的完整设计流程。',
+            bg: '优秀校友及项目/王灿_23级智能交互设计/e043b0d6535555364f43acee02010649.jpg',
+            link: 'https://wangcan-portfolio-home.app.workbuddy.host/',
+            linkText: '访问个人主页'
+        },
+        // 位置 6-10：空位占位
+        ...Array(5).fill(null)
     ];
 
     const totalCards = alumni.length; // 10
