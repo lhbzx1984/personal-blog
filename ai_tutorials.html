@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="common.css">
     <!-- 预提取的书籍文本（RAG 上下文），由 _extract_pdf.py 生成 -->
     <script src="AI好教程/workbuddy_text.js?v=1"></script>
+    <script src="AI好教程/whitepaper_text.js?v=1"></script>
     <style>
         /* AI好教程 书架页面专用样式 */
         .tutorials-section {
@@ -501,6 +502,15 @@
                             <div class="book-meta">V2 · PDF · 智能体办公</div>
                         </div>
                         <div class="shelf-board"></div>
+                        <div class="book" data-book="whitepaper">
+                            <img class="book-cover" src="AI好教程/白皮书封面.jpg" alt="WorkBuddy企业岗位应用全景白皮书2026">
+                            <div class="book-spine"></div>
+                        </div>
+                        <div class="book-info">
+                            <div class="book-name">WorkBuddy企业岗位应用全景白皮书2026</div>
+                            <div class="book-meta">2026 · PDF · 企业岗位应用</div>
+                        </div>
+                        <div class="shelf-board"></div>
                     </div>
                 </div>
 
@@ -570,7 +580,14 @@
             workbuddy: {
                 title: 'WorkBuddy AI智能体办公实战指导手册',
                 file: 'AI好教程/WorkBuddy AI智能体办公实战指导手册_V2.pdf',
-                desc: 'WorkBuddy AI智能体办公实战指导手册，涵盖AI智能体在办公场景（文档、表格、演示、邮件、自动化）中的实战应用。'
+                desc: 'WorkBuddy AI智能体办公实战指导手册，涵盖AI智能体在办公场景（文档、表格、演示、邮件、自动化）中的实战应用。',
+                textData: window.WORKBUDDY_BOOK
+            },
+            whitepaper: {
+                title: 'WorkBuddy企业岗位应用全景白皮书2026',
+                file: 'AI好教程/WorkBuddy企业岗位应用全景白皮书2026.pdf',
+                desc: 'WorkBuddy企业岗位应用全景白皮书，系统阐述AI智能体在企业各岗位场景中的落地路径、应用模式与价值分析。',
+                textData: window.WHITEPAPER_BOOK
             }
         };
 
@@ -623,7 +640,7 @@
             aiMessages.innerHTML = '';
             chapterBtns.innerHTML = '';
 
-            const bookData = window.WORKBUDDY_BOOK;
+            const bookData = book.textData;
             if (bookData && bookData.fullText) {
                 bookFullText = bookData.fullText;
                 bookChunks = bookData.chunks || [];
@@ -663,8 +680,8 @@
             const qs = [
                 '这本书的主要内容是什么？',
                 '帮我列出所有章节标题',
-                'WorkBuddy如何处理Excel表格？',
-                '如何用AI智能体自动化办公？'
+                '书中有哪些核心观点？',
+                '如何应用书中的方法到实际工作？'
             ];
             chapterBtns.innerHTML = '';
             qs.forEach(q => {
